@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthday Card</title>
+<style>
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(to bottom, #ffdde1, #ee9ca7);
+  overflow: hidden;
+}
+.card {
+  width: 450px;
+  height: 350px;
+  perspective: 1000px;
+  position: relative;
+}
+.page {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  position: absolute;
+  top: 0;
+  left: 0;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.8s ease, opacity 0.5s ease;
+}
+.page h1 {
+  color: #ff4757;
+  font-weight: bold;
+}
+.page p { margin-top:10px; }
+.page.active { transform: rotateY(0deg); opacity:1; z-index:2; }
+.page.inactive { transform: rotateY(-180deg); opacity:0; z-index:1; }
+button {
+  padding: 10px 20px;
+  background: #ff6b81;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 10px 5px 0 5px;
+}
+button:hover { background: #ff4757; }
+
+/* Cake Image */
+.cake-img {
+  width: 120px;
+  height: auto;
+  margin-top: 20px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.cake-img:hover { transform: scale(1.2) rotate(-10deg); }
+
+/* Balloons */
+#balloons { position:absolute; width:100%; height:100%; pointer-events:none; }
+.balloon {
+  width: 40px; height:50px; border-radius:50%;
+  position:absolute; bottom:-60px;
+  animation: rise 5s linear infinite;
+}
+@keyframes rise { 0% { bottom:-60px; } 100% { bottom:400px; } }
+
+/* Confetti */
+.confetti {
+  position:absolute; width:10px; height:10px; pointer-events:none;
+  animation: fall 2s linear forwards;
+}
+@keyframes fall { 0% { transform:translateY(0); opacity:1; } 100% { transform:translateY(300px); opacity:0; } }
+
+/* Teasing popup */
+.tease {
+  position:absolute;
+  top:10%; left:50%;
+  transform:translateX(-50%);
+  background:#ff6b81;
+  color:white;
+  padding:10px 20px;
+  border-radius:10px;
+  font-weight:bold;
+  opacity:0;
+  animation: teaseAnim 1.5s forwards;
+}
+@keyframes teaseAnim {
+  0% { opacity:0; transform:translateX(-50%) translateY(-20px); }
+  50% { opacity:1; transform:translateX(-50%) translateY(0px); }
+  100% { opacity:0; transform:translateX(-50%) translateY(-20px); }
+}
+</style>
+</head>
+<body>
+
+<!-- Embedded audio (Base64 example, shortened for demo, replace with actual Base64 for full audio) -->
+<audio id="birthday-music" loop>
+  <source src="/Users/muhammadshayan/Downloads/happy-birthday-334876.mp3" type="audio/mpeg">
+</audio>
+
+<div class="card">
+  <div class="page active" id="page1">
+    <h1>🎉 Happy Birthday! 🎉</h1>
+    <p>Wishing you a day full of fun… and a little mischief 😏</p>
+    <button onclick="nextPage()">Next</button>
+  </div>
+  <div class="page inactive" id="page2">
+    <h1>🎂 Cake Time! 🎂</h1>
+    <p>Don’t eat too much… or maybe do 😜</p>
+    <img src="/Users/muhammadshayan/Downloads/pngtree-birthday-cake-png-image_18670704.png" alt="Cake" class="cake-img">
+    <div>
+      <button onclick="prevPage()">Previous</button>
+      <button onclick="nextPage()">Next</button>
+    </div>
+  </div>
+  <div class="page inactive" id="page3">
+    <h1>🎁 Gifts & Surprises! 🎁</h1>
+    <p>Another year older… still pretending to be wise 🤪</p>
+    <div>
+      <button onclick="prevPage()">Previous</button>
+      <button onclick="nextPage()">Next</button>
+    </div>
+  </div>
+  <div class="page inactive" id="page4">
+    <h1>🌟 Cheers to You! 🌟</h1>
+    <p>Hope this year is full of laughter 😏</p>
+    <div>
+      <button onclick="prevPage()">Previous</button>
+      <button onclick="nextPage()">Next</button>
+    </div>
+  </div>
+  <div class="page inactive" id="page5">
+    <h1>🥳 Celebrate! 🥳</h1>
+    <p>Enjoy your day… you deserve it! 🎉</p>
+    <div>
+      <button onclick="prevPage()">Previous</button>
+      <button onclick="restartCard()">Restart</button>
+    </div>
+  </div>
+</div>
+
+<div id="balloons"></div>
+
+<script>
+let currentPage = 1;
+const totalPages = 5;
+let musicStarted = false;
+const audio = document.getElementById('birthday-music');
+
+function showPage(pageNumber){
+  for(let i=1;i<=totalPages;i++){
+    const page = document.getElementById(`page${i}`);
+    if(i===pageNumber){ page.classList.add('active'); page.classList.remove('inactive'); }
+    else{ page.classList.remove('active'); page.classList.add('inactive'); }
+  }
+  createConfetti(document.getElementById(`page${pageNumber}`));
+  showTease();
+}
+
+function nextPage(){
+  if(currentPage<totalPages){
+    currentPage++;
+    showPage(currentPage);
+    // Play music only on first Next click (leaving page 1)
+    if(!musicStarted && currentPage===2){
+      audio.play().catch(()=>{console.log("Autoplay blocked, needs user interaction")});
+      musicStarted=true;
+    }
+  }
+}
+
+function prevPage(){ if(currentPage>1){ currentPage--; showPage(currentPage); } }
+function restartCard(){ currentPage=1; showPage(currentPage); }
+
+// Confetti
+function createConfetti(container){
+  for(let i=0;i<15;i++){
+    const confetti = document.createElement('div');
+    confetti.classList.add('confetti');
+    confetti.style.left = Math.random()*90+'%';
+    confetti.style.background = `hsl(${Math.random()*360},100%,60%)`;
+    container.appendChild(confetti);
+    setTimeout(()=>confetti.remove(),2000);
+  }
+}
+
+// Balloons
+const balloonColors = ['red','blue','yellow','pink','orange','green','purple'];
+function createBalloon(){
+  const balloon = document.createElement('div');
+  balloon.classList.add('balloon');
+  balloon.style.background = balloonColors[Math.floor(Math.random()*balloonColors.length)];
+  balloon.style.left = Math.random()*90+'%';
+  document.getElementById('balloons').appendChild(balloon);
+  setTimeout(()=>balloon.remove(),5000);
+}
+setInterval(createBalloon,800);
+
+// Teasing popup
+function showTease(){
+  const messages=[
+    "Are you really that old? 😏",
+    "Another year closer to a legend… or chaos! 🤪",
+    "Cake time! Don’t eat too much 😜",
+    "Still pretending to be wise? 😎"
+  ];
+  const msg = messages[Math.floor(Math.random()*messages.length)];
+  const div=document.createElement('div');
+  div.className='tease';
+  div.innerText=msg;
+  document.body.appendChild(div);
+  setTimeout(()=>div.remove(),1500);
+}
+
+showPage(currentPage);
+</script>
+</body>
+</html>
+
+</body>
+</html>
